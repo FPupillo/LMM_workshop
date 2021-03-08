@@ -1,0 +1,32 @@
+{
+    "id": "CCE46C0E",
+    "path": null,
+    "project_path": null,
+    "type": "r_dataframe",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1615215015691.0,
+    "source_on_save": false,
+    "relative_order": 9,
+    "properties": {
+        "expression": "dat_sim",
+        "caption": "dat_sim",
+        "totalObservations": 18000,
+        "displayedObservations": 18000,
+        "variables": 7,
+        "cacheKey": "C3B29695",
+        "object": "dat_sim",
+        "environment": "",
+        "contentUrl": "grid_resource/gridviewer.html?env=&obj=dat_sim&cache_key=C3B29695&max_cols=50",
+        "preview": 0
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1615214773,
+    "encoding": "",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1615215015691,
+    "read_only": false,
+    "read_only_alternatives": []
+}

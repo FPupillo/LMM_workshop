@@ -1,0 +1,104 @@
+---
+title: "LMM tutorial"
+author: "Francesco Pupillo"
+date: "March, 2021"
+output:
+  md_document:
+    variant: markdown_github
+    toc: true
+    toc_depth: 6
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r load packages, message=FALSE, warning=FALSE, paged.print=FALSE}
+# load the packages and source functions
+library(dplyr)
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(RLRsim)
+source("helper_functions/simulateData.R")
+# suppress scientific notation
+options(scipen=5)
+```
+
+Simulate data
+
+```{r simulate Data}
+# set.seed
+set.seed(1234)
+df<-my_sim_data(   
+  SubN = 30,
+  beta_0 = 1.28, # grand mean (fixed intercept)
+  PEmean = 0.30,# PEmean
+  beta_PE = 0.55, # effect of PE (fixed slope)
+  n_items = 300, # number of trials
+  tau_0 = 1.80, # by-subject random intercept sd .Check if it is sd, because than it will be squared into variance
+  tau_1 = 0.5, # by-subject random slope sd
+  rho = 0.3, # correlation between intercept and slope
+  sigma = 0.3, # residual standard deviation
+  RTorACC = 1 # Reaction times or accuracy (1 = RT, 2 = accuracy)
+  )
+
+# show first row of simulated data
+head(df)
+```
+    
+How can we deal with such a dataset?
+We can aggregate values at the participant level, then run OLS
+```{r aggregate}
+
+df_agg<-df %>%
+  group_by(subj_id) %>%
+  summarise(RT=mean(RT), PE=mean(PE)) 
+
+# plot 
+ggplot(df_agg, aes(y=PE, x = RT))+
+  geom_point()+
+  geom_smooth(method="lm")
+
+linearmod<-lm(RT~PE, data = df_agg)
+
+summary(linearmod)
+
+#linearmod<-lmer(RT~PE+(1+PE|subj_id), data = df)
+
+
+# get f value
+summary.aov(linearmod)
+
+
+
+```
+
+```{r lmmr rand int}
+
+# first, let's run an intercept only, unconditional model
+mixmod_unc<-lmer(RT~1+(1|subj_id), data = df)
+
+summary(mixmod_unc)
+
+
+```
+
+```{r rand int test sig}
+# test significance
+# model without random intercept. We can create a random intercept that is constant at 1
+df$constint<-rep(1, nrow(df))
+
+mod_unc<-lm(RT~1, data=df)
+mixmod_unc<-lmer(RT~1+(1|subj_id), data = df)
+
+anova(mixmod_unc, mod_unc)
+```
+
+```{r sim based test}
+# use simulation based-test
+exactLRT(mixmod_unc,mod_unc)
+
+
+```
