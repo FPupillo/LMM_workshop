@@ -1,8 +1,5 @@
   # set up the custom data simulation function
   # In order to get more explanation please check the file "power_analysis1.R" in the same folder
-  rm(list=ls())
-  
-  
   library(dplyr)
   library(tidyr)
   library(lme4)
@@ -72,13 +69,15 @@
       }
     }
     
+
+    
      #select(subj_id, item_id, valence, PM)
     
     if (RTorACC==1){
       dat_sim<- trials %>%
         mutate(RT = beta_0 + T_0s + (beta_PE + T_1s)*PE  + e_si)# %>% 
       # add the smallest value to make it positive (absolute number)
-      #dat_sim$RT<-dat_sim$RT+abs(min(dat_sim$RT))
+      dat_sim$RT<-dat_sim$RT+abs(min(dat_sim$RT))
      # hist(dat_sim$RT)
       #dat_sim$RT<-dexp(dat_sim$RT, rate=0.25)
       # add 500 ms

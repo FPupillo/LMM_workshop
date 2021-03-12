@@ -33,12 +33,12 @@ Simulate data
 set.seed(1234)
 df<-my_sim_data(   
   SubN = 30,
-  beta_0 = 1.28, # grand mean (fixed intercept)
+  beta_0 = 0.60, # grand mean (fixed intercept)
   PEmean = 0.30,# PEmean
-  beta_PE = 0.55, # effect of PE (fixed slope)
+  beta_PE = 1.28, # effect of PE (fixed slope)
   n_items = 300, # number of trials
   tau_0 = 1.80, # by-subject random intercept sd .Check if it is sd, because than it will be squared into variance
-  tau_1 = 0.5, # by-subject random slope sd
+  tau_1 = 2.50, # by-subject random slope sd
   rho = 0.3, # correlation between intercept and slope
   sigma = 0.3, # residual standard deviation
   RTorACC = 1 # Reaction times or accuracy (1 = RT, 2 = accuracy)
@@ -52,24 +52,21 @@ How can we deal with such a dataset?
 We can aggregate values at the participant level, then run OLS
 ```{r aggregate}
 
+# aggregate RT at the subject level
 df_agg<-df %>%
   group_by(subj_id) %>%
   summarise(RT=mean(RT), PE=mean(PE)) 
 
 # plot 
-ggplot(df_agg, aes(y=PE, x = RT))+
+ggplot(df_agg, aes(y=RT, x = PE))+
   geom_point()+
   geom_smooth(method="lm")
 
+# simple regression
 linearmod<-lm(RT~PE, data = df_agg)
 
+# get the summary
 summary(linearmod)
-
-#linearmod<-lmer(RT~PE+(1+PE|subj_id), data = df)
-
-
-# get f value
-summary.aov(linearmod)
 
 
 
@@ -78,14 +75,21 @@ summary.aov(linearmod)
 ```{r lmmr rand int}
 
 # first, let's run an intercept only, unconditional model
-mixmod_unc<-lmer(RT~1+(1|subj_id), data = df)
+mixmod_unc<-lmer(RT~1+(1|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))#,optCtrl=list(maxfun=100000)))
 
 summary(mixmod_unc)
 
+# calculate the intraclass correlation
+ICC<-VarCorr(mixmod_unc)$subj_id[1]/(VarCorr(mixmod_unc)$subj_id[1]+summary(mixmod_unc)$sigma^2)
+
+# paste the results
+paste("The IntraClass Correlation is",  ICC)
 
 ```
 
+
 ```{r rand int test sig}
+
 # test significance
 # model without random intercept. We can create a random intercept that is constant at 1
 df$constint<-rep(1, nrow(df))
@@ -101,4 +105,229 @@ anova(mixmod_unc, mod_unc)
 exactLRT(mixmod_unc,mod_unc)
 
 
+```
+
+
+``` {r maximal}
+
+# plot
+  ggplot(df, aes(y=RT, x = PE))+
+  geom_smooth(method="lm", se=F)+aes(colour = factor(subj_id))+
+    geom_smooth(method="lm", colour="black")
+
+
+
+maxMod<-lmer(RT~PE+(1+PE|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
+summary(maxMod)
+
+anova(maxMod)
+```
+
+
+
+
+``` {r centering}
+
+# grand mean centring and person mean centring
+df<- df %>%
+  # Grand mean centering (GMC)
+  mutate (PE.gmc = PE-mean(PE)) %>%
+  # Person mean centering (centering withing clusters - Participants)
+  group_by(subj_id) %>%
+  mutate(PE.cm = mean(PE),
+         PE.cwc = PE-PE.cm ) %>%
+  ungroup %>%
+  # grand mean centering of the aggregated variable
+  mutate(PE.cmc= PE.cm-mean(PE.cm))
+
+
+maxModCent<-lmer(RT~PE.cwc+PE.cmc+(1+PE.cwc|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
+summary(maxModCent)
+
+```
+
+
+``` {r model selection backward}
+
+# fit a model with covariance of random effects set at zero
+maxModZeroCov<-lmer(RT~PE+PE+(PE||subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
+
+summary(maxModZeroCov)
+
+# let's compare
+anova(maxMod, maxModZeroCov )
+
+
+```
+
+``` {r categorical predictor between}
+
+# create a categorical predictor between, simulating that we are randomly assigning participants
+# to different groups of PE
+PEbet<-rep(c("HighPE", "LowPE", "MediumPE"), each= nrow(df_agg)/3)
+
+# created the levels in the aggregated dataset
+  # pick random subject
+  df_agg$PEbw<-sample(PEbet, nrow(df_agg), replace = F)
+  
+  # we want it as factor
+  df_agg$PEbw<-as.factor(df_agg$PEbw)
+
+  # descriptives
+df_agg %>%
+  group_by(PEbw) %>%
+  summarise(mean=mean(RT), sd = sd(RT))
+
+# plot 
+ggplot(df_agg, aes(PEbw, RT))+
+  geom_bar(aes(PEbw, RT, fill = PEbw),
+           position="dodge",stat="summary")+
+  geom_point()+
+  stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )# this line adds error bars
+
+
+# create an Anova between participant
+bwlm<-lm(RT~PEbw, data=df_agg)
+
+summary(bwlm)
+
+# re-level in order to have medium as the reference level
+df_agg$PEbw<-relevel(df_agg$PEbw, ref = "MediumPE")
+
+# refit
+bwlm<-lm(RT~PEbw, data=df_agg)
+
+summary(bwlm)
+
+anova(bwlm)
+
+```
+
+``` {r setting contrasts}
+# method 1: contrast poly
+contrasts(df_agg$PEbw)<-contr.poly(3) # we have three levels in our categorical predictor
+
+# refit the model
+bwlmContr<-lm(RT~PEbw, data=df_agg)
+
+summary(bwlmContr)
+
+# set our own contrasts
+# linear
+contrast1<-c(-1,0,1)
+# quadratic
+contrast2<-c(1,-2,1)
+
+
+contrasts(df_agg$PEbw)<-cbind(contrast1, contrast2)
+  
+# refit the model
+bwlmContrCust<-lm(RT~PEbw, data=df_agg)
+
+summary(bwlmContrCust)               
+          
+```
+
+``` {r continuous predictor between}
+
+# what if we convert the categorical into continuous?
+df_agg$PEbwC<-as.vector(NA)
+
+for (n in 1:nrow(df_agg)){
+  if (df_agg$PEbw[n]=="MediumPE"){
+  df_agg$PEbwC[n]<-0.33
+  } else if (df_agg$PEbw[n] == "HighPE"){
+    df_agg$PEbwC[n]<-0.80
+  }  else if (df_agg$PEbw[n] == "LowPE"){
+    df_agg$PEbwC[n]<-0.20
+  }
+}
+
+ggplot(df_agg, aes(y=RT, x = PEbwC))+
+  geom_point()+
+  geom_smooth(method="lm")
+
+# fit lm
+bwlmC<-lm(RT~PEbwC, data=df_agg)
+
+summary(bwlmC)
+
+```
+
+
+``` {r categorical predictor within ez}
+
+# we have a categorical variable in the dataset, which is PElevel
+# let's inspect that
+  ggplot(df, aes(y=RT, x = PElevel))+
+  geom_boxplot( )
+
+# make it categorical
+df$PElevel<-as.factor(df$PElevel)
+
+# eazy anova on the aggregate dataset
+df_aggbw<-df %>%
+          group_by(subj_id,PElevel) %>%
+          summarise(RT=mean(RT))
+
+head(df_aggbw)
+
+# ezanova
+library(ez)
+ezModel<-ezANOVA(data = df_aggbw, # dataframe
+                 dv = .(RT), # dependent variable. This functions requires to place the name of each variable within .() 
+                 wid = .(subj_id), # variable that identifies participants )
+                 within = .(PElevel), # independent variable
+                 detailed = T
+                 )
+
+ezModel
+```
+
+``` {r categorical predictor within mixed-effects}
+
+# 
+ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
+summary(ModCateg)
+
+ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
+summary(ModCateg)
+
+anova (ModCateg)
+ModCateg2<-lmer(RT~PElevel+(-1+PElevel|subj_id)+(1|subj_id),data = df, control=lmerControl(optimizer="bobyqa"))
+
+anova(ModCateg, ModCateg2)
+
+summary(rePCA(ModCateg))
+
+anova(maxModZeroCov)
+# let's compare
+anova(maxMod, maxModZeroCov )
+
+# set contrasts
+contrasts(df$PElevel)<-contr.poly(3)
+ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
+
+summary(ModCateg)
+
+anova(ModCateg)
+# bayesian
+fit_b<-brm(RT~PElevel +(RT|subj_id),   #similar to lmwr
+           
+           warmup = 500, 
+           iter = 2000, 
+           chains = 2, 
+           #prior = prior2,
+           inits = "0", 
+           cores=1,
+           data=df)
+# try nlme
+test.lme<-lme(fixed = RT~PElevel, 
+              random = ~ PElevel| subj_id, 
+              data = df, 
+              method = "REML", 
+              control= lmeControl( opt = "optim", optimMethod ="BFGS" ))
+
+summary(test.lme)
+test.lme
 ```

@@ -1,4 +1,0 @@
-"0","# load the packages and source functions"
-"0","library(ggplot2)"
-"0","library(lme4)"
-"0","source(""helper_functions/simulateData.R"")"
