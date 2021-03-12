@@ -51,6 +51,7 @@ head(df)
 How can we deal with such a dataset?
 We can aggregate values at the participant level, then run OLS
 ```{r aggregate}
+# We are assuming that RT are normally distributed
 
 # aggregate RT at the subject level
 df_agg<-df %>%
@@ -258,12 +259,12 @@ summary(bwlmC)
 ``` {r categorical predictor within ez}
 
 # we have a categorical variable in the dataset, which is PElevel
+df$PElevel<-as.factor(df$PElevel)
+
 # let's inspect that
   ggplot(df, aes(y=RT, x = PElevel))+
   geom_boxplot( )
 
-# make it categorical
-df$PElevel<-as.factor(df$PElevel)
 
 # eazy anova on the aggregate dataset
 df_aggbw<-df %>%
@@ -290,38 +291,39 @@ ezModel
 ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
 summary(ModCateg)
 
-ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
-summary(ModCateg)
-
-anova (ModCateg)
-ModCateg2<-lmer(RT~PElevel+(-1+PElevel|subj_id)+(1|subj_id),data = df, control=lmerControl(optimizer="bobyqa"))
-
-anova(ModCateg, ModCateg2)
-
-summary(rePCA(ModCateg))
-
-anova(maxModZeroCov)
-# let's compare
-anova(maxMod, maxModZeroCov )
-
-# set contrasts
-contrasts(df$PElevel)<-contr.poly(3)
-ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
-
-summary(ModCateg)
-
-anova(ModCateg)
-# bayesian
-fit_b<-brm(RT~PElevel +(RT|subj_id),   #similar to lmwr
-           
-           warmup = 500, 
-           iter = 2000, 
-           chains = 2, 
-           #prior = prior2,
-           inits = "0", 
-           cores=1,
-           data=df)
+# ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
+# summary(ModCateg)
+# 
+# anova (ModCateg)
+# ModCateg2<-lmer(RT~PElevel+(-1+PElevel|subj_id)+(1|subj_id),data = df, control=lmerControl(optimizer="bobyqa"))
+# 
+# anova(ModCateg, ModCateg2)
+# 
+# summary(rePCA(ModCateg))
+# 
+# anova(maxModZeroCov)
+# # let's compare
+# anova(maxMod, maxModZeroCov )
+# 
+# # set contrasts
+# contrasts(df$PElevel)<-contr.poly(3)
+# ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
+# 
+# summary(ModCateg)
+# 
+# anova(ModCateg)
+# # bayesian
+# fit_b<-brm(RT~PElevel +(PElevel|subj_id),   #similar to lmwr
+#            
+#            warmup = 500, 
+#            iter = 2000, 
+#            chains = 2, 
+#            #prior = prior2,
+#            inits = "0", 
+#            cores=1,
+#            data=df)
 # try nlme
+library(nlme)
 test.lme<-lme(fixed = RT~PElevel, 
               random = ~ PElevel| subj_id, 
               data = df, 
