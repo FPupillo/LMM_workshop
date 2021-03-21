@@ -1,29 +1,28 @@
--   [0.0.1 Load packages](#load-packages)
--   [0.0.2 Simulate data](#simulate-data)
--   [0.0.3 Aggregate](#aggregate)
--   [0.0.4 Unconditional model, random
+-   [1 Load packages](#load-packages)
+-   [2 Simulate data](#simulate-data)
+-   [3 Aggregate](#aggregate)
+-   [4 Unconditional model, random
     intercepts](#unconditional-model-random-intercepts)
--   [0.0.5 Test significance of random
+-   [5 Test significance of random
     intercepts](#test-significance-of-random-intercepts)
--   [0.0.6 Simulation-based LRT](#simulation-based-lrt)
--   [0.0.7 Maximal model](#maximal-model)
--   [0.0.8 Centering](#centering)
--   [0.0.9 How much variance does our predictor explain on level 1 and
+-   [6 Simulation-based LRT](#simulation-based-lrt)
+-   [7 Maximal model](#maximal-model)
+-   [8 Centering](#centering)
+-   [9 How much variance does our predictor explain on level 1 and
     2](#how-much-variance-does-our-predictor-explain-on-level-1-and-2)
--   [0.0.10 Model selection backward](#model-selection-backward)
--   [1 Excercise1](#excercise1)
-    -   [1.0.1 Categorical predictor
-        between](#categorical-predictor-between)
-    -   [1.0.2 Setting contrasts](#setting-contrasts)
-    -   [1.0.3 Continuous predictor
-        between](#continuous-predictor-between)
-    -   [1.0.4 Categorical predictor within.
-        EZ](#categorical-predictor-within.-ez)
-    -   [1.0.5 Categorical predictor within:
-        mixed-effects](#categorical-predictor-within-mixed-effects)
-    -   [1.0.6 excercise2](#excercise2)
+-   [10 Model selection backward](#model-selection-backward)
+-   [11 Excercise1](#excercise1)
+-   [12 Categorical predictor between](#categorical-predictor-between)
+-   [13 Setting contrasts](#setting-contrasts)
+-   [14 Continuous predictor between](#continuous-predictor-between)
+-   [15 Categorical predictor within.
+    EZ](#categorical-predictor-within.-ez)
+-   [16 Categorical predictor within:
+    mixed-effects](#categorical-predictor-within-mixed-effects)
+-   [17 excercise2](#excercise2)
 
-### 0.0.1 Load packages
+1 Load packages
+===============
 
 ``` r
 # load the packages and source functions
@@ -37,7 +36,8 @@ source("helper_functions/simulateData.R")
 options(scipen=5)
 ```
 
-### 0.0.2 Simulate data
+2 Simulate data
+===============
 
 ``` r
 # set.seed
@@ -69,7 +69,8 @@ head(df)
     ## 5       1  2.42  2.44       5  0.121 -0.338    9.85       2
     ## 6       1  2.42  2.44       6 -0.554 -0.555    7.13       2
 
-### 0.0.3 Aggregate
+3 Aggregate
+===========
 
 ``` r
 # We are assuming that RT are normally distributed
@@ -114,7 +115,8 @@ summary(linearmod)
     ## Multiple R-squared:  0.0002105,  Adjusted R-squared:  -0.0355 
     ## F-statistic: 0.005897 on 1 and 28 DF,  p-value: 0.9393
 
-### 0.0.4 Unconditional model, random intercepts
+4 Unconditional model, random intercepts
+========================================
 
 ``` r
 # first, let's run an intercept only, unconditional model
@@ -157,7 +159,8 @@ paste("The IntraClass Correlation is",  ICC)
 
     ## [1] "The IntraClass Correlation is 0.464271789380495"
 
-### 0.0.5 Test significance of random intercepts
+5 Test significance of random intercepts
+========================================
 
 ``` r
 # test significance
@@ -182,7 +185,8 @@ anova(mixmod_unc, mod_unc)
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-### 0.0.6 Simulation-based LRT
+6 Simulation-based LRT
+======================
 
 ``` r
 # use simulation based-test
@@ -202,7 +206,8 @@ exactLRT(mixmod_unc,mod_unc)
     ## data:  
     ## LRT = 5310.3, p-value < 2.2e-16
 
-### 0.0.7 Maximal model
+7 Maximal model
+===============
 
 ``` r
 # plot
@@ -260,7 +265,8 @@ anova(maxMod)
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-### 0.0.8 Centering
+8 Centering
+===========
 
 ``` r
 # grand mean centring and person mean centring
@@ -312,7 +318,8 @@ summary(maxModCent)
     ## PE.cwc 0.639        
     ## PE.cmc 0.000  0.000
 
-### 0.0.9 How much variance does our predictor explain on level 1 and 2
+9 How much variance does our predictor explain on level 1 and 2
+===============================================================
 
 ``` r
 ## R^2pseudo:within
@@ -379,7 +386,8 @@ summary(ModPE)
 ## if we want to include random slopes, we need to consider these sources of variances as well in our calculation
 ```
 
-### 0.0.10 Model selection backward
+10 Model selection backward
+===========================
 
 ``` r
 # fit a model with covariance of random effects set at zero
@@ -435,8 +443,8 @@ anova(maxMod, maxModZeroCov )
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-1 Excercise1
-============
+11 Excercise1
+=============
 
 ``` r
 # baseline model
@@ -449,7 +457,8 @@ anova(maxMod, maxModZeroCov )
 # m2 <-
 ```
 
-### 1.0.1 Categorical predictor between
+12 Categorical predictor between
+================================
 
 ``` r
 # create a categorical predictor between, simulating that we are randomly assigning participants
@@ -557,7 +566,8 @@ anova(bwlm)
     ## PEbw       2  6.615  3.3077  0.9394 0.4033
     ## Residuals 27 95.066  3.5210
 
-### 1.0.2 Setting contrasts
+13 Setting contrasts
+====================
 
 ``` r
 # method 1: contrast poly
@@ -625,7 +635,8 @@ summary(bwlmContrCust)
     ## Multiple R-squared:  0.06506,    Adjusted R-squared:  -0.004194 
     ## F-statistic: 0.9394 on 2 and 27 DF,  p-value: 0.4033
 
-### 1.0.3 Continuous predictor between
+14 Continuous predictor between
+===============================
 
 ``` r
 # what if we convert the categorical into continuous?
@@ -676,7 +687,8 @@ summary(bwlmC)
     ## Multiple R-squared:  0.03623,    Adjusted R-squared:  0.001813 
     ## F-statistic: 1.053 on 1 and 28 DF,  p-value: 0.3137
 
-### 1.0.4 Categorical predictor within. EZ
+15 Categorical predictor within. EZ
+===================================
 
 ``` r
 # we have a categorical variable in the dataset, which is PElevel
@@ -756,7 +768,8 @@ ezModel
     ##    Effect       GGe       p[GG] p[GG]<.05       HFe       p[HF] p[HF]<.05
     ## 2 PElevel 0.5005596 0.008167513         * 0.5006196 0.008165235         *
 
-### 1.0.5 Categorical predictor within: mixed-effects
+16 Categorical predictor within: mixed-effects
+==============================================
 
 ``` r
 # 
@@ -884,7 +897,8 @@ test.lme
     ## Number of Observations: 9000
     ## Number of Groups: 30
 
-### 1.0.6 excercise2
+17 excercise2
+=============
 
 ``` r
 # contr. poly
