@@ -48,8 +48,7 @@ df<-my_sim_data(
 head(df)
 ```
     
-How can we deal with such a dataset?
-We can aggregate values at the participant level, then run OLS
+
 ```{r aggregate}
 # We are assuming that RT are normally distributed
 
@@ -113,8 +112,9 @@ exactLRT(mixmod_unc,mod_unc)
 
 # plot
   ggplot(df, aes(y=RT, x = PE))+
-  geom_smooth(method="lm", se=F)+aes(colour = factor(subj_id))+
-    geom_smooth(method="lm", colour="black")
+  geom_line(stat="smooth", method= "lm", formula = y~x, alpha = 0.5)+aes(colour = factor(subj_id))+
+  geom_smooth(method="lm", colour="black")
+
 
 
 
@@ -123,7 +123,6 @@ summary(maxMod)
 
 anova(maxMod)
 ```
-
 
 
 
@@ -146,7 +145,30 @@ maxModCent<-lmer(RT~PE.cwc+PE.cmc+(1+PE.cwc|subj_id), data = df, control=lmerCon
 summary(maxModCent)
 
 ```
+How much variance does our predictor explain on level 1 and 2
+```{r Calculating R2pseudo between, within and between-within}
 
+## R^2pseudo:within
+# we create a new model including PE grand mean centered (PE_gmc) as preditor for RT
+ModPE<-lmer(RT~PE.gmc+(1|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
+summary(ModPE)
+
+# used to quantify the change in (within) residual variance 
+# variance residuum m0 - variance residuum m1 / variance residuum m0 = 1- Variance residuum m1/variance residuum m0
+1 - summary(ModPE)$sigma^2/summary(mixmod_unc)$sigma^2
+
+## R^2pseudo:between
+# Variance Intercept modunc - Variance ModPE/Variance mixmod_unc = 1-Variance ModPE/Variance mixmod_unc
+1 - VarCorr(ModPE)$subj_id[1]/VarCorr(mixmod_unc)$subj_id[1]
+
+## R^2pseudo:bw (between and within)
+# explained variance of each model = variance intercept + residual variance
+# R^2pseudo:bw = 1-(Var.intercept ModPE + Var.residuum ModPE)/(Var. intercept mixedmod_unc + Var. Residuum mixedmod_unc)
+1 - (VarCorr(ModPE)$subj_id[1] + summary(ModPE)$sigma^2)/(VarCorr(mixmod_unc)$subj_id[1] + summary(mixmod_unc)$sigma^2)
+
+## if we want to include random slopes, we need to consider these sources of variances as well in our calculation
+
+```
 
 ``` {r model selection backward}
 
@@ -157,6 +179,19 @@ summary(maxModZeroCov)
 
 # let's compare
 anova(maxMod, maxModZeroCov )
+
+
+```
+```{r  exercise1 model selection forward}
+
+# baseline model
+# m0 <-
+
+# add random effect
+# m1 <-
+  
+# make it more complex  
+# m2 <-
 
 
 ```
@@ -291,37 +326,6 @@ ezModel
 ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
 summary(ModCateg)
 
-# ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
-# summary(ModCateg)
-# 
-# anova (ModCateg)
-# ModCateg2<-lmer(RT~PElevel+(-1+PElevel|subj_id)+(1|subj_id),data = df, control=lmerControl(optimizer="bobyqa"))
-# 
-# anova(ModCateg, ModCateg2)
-# 
-# summary(rePCA(ModCateg))
-# 
-# anova(maxModZeroCov)
-# # let's compare
-# anova(maxMod, maxModZeroCov )
-# 
-# # set contrasts
-# contrasts(df$PElevel)<-contr.poly(3)
-# ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
-# 
-# summary(ModCateg)
-# 
-# anova(ModCateg)
-# # bayesian
-# fit_b<-brm(RT~PElevel +(PElevel|subj_id),   #similar to lmwr
-#            
-#            warmup = 500, 
-#            iter = 2000, 
-#            chains = 2, 
-#            #prior = prior2,
-#            inits = "0", 
-#            cores=1,
-#            data=df)
 # try nlme
 library(nlme)
 test.lme<-lme(fixed = RT~PElevel, 
@@ -332,4 +336,12 @@ test.lme<-lme(fixed = RT~PElevel,
 
 summary(test.lme)
 test.lme
+```
+
+```{r  exercise2 contrasts for within lmm}
+# contr. poly
+
+# custom contrast
+
+
 ```

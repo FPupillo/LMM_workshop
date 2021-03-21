@@ -42,9 +42,6 @@ head(df)
     ## 5       1  2.42  2.44       5  0.121 -0.338    9.85       2
     ## 6       1  2.42  2.44       6 -0.554 -0.555    7.13       2
 
-How can we deal with such a dataset? We can aggregate values at the
-participant level, then run OLS
-
 ``` r
 # We are assuming that RT are normally distributed
 
@@ -173,11 +170,10 @@ exactLRT(mixmod_unc,mod_unc)
 ``` r
 # plot
   ggplot(df, aes(y=RT, x = PE))+
-  geom_smooth(method="lm", se=F)+aes(colour = factor(subj_id))+
-    geom_smooth(method="lm", colour="black")
+  geom_line(stat="smooth", method= "lm", formula = y~x, alpha = 0.5)+aes(colour = factor(subj_id))+
+  geom_smooth(method="lm", colour="black")
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
     ## `geom_smooth()` using formula 'y ~ x'
 
 ![](lmmworkshop_files/figure-markdown_github/maximal-1.png)
@@ -277,6 +273,73 @@ summary(maxModCent)
     ## PE.cwc 0.639        
     ## PE.cmc 0.000  0.000
 
+How much variance does our predictor explain on level 1 and 2
+
+``` r
+## R^2pseudo:within
+# we create a new model including PE grand mean centered (PE_gmc) as preditor for RT
+ModPE<-lmer(RT~PE.gmc+(1|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
+summary(ModPE)
+```
+
+    ## Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+    ## lmerModLmerTest]
+    ## Formula: RT ~ PE.gmc + (1 | subj_id)
+    ##    Data: df
+    ## Control: lmerControl(optimizer = "bobyqa")
+    ## 
+    ## REML criterion at convergence: 36120.8
+    ## 
+    ## Scaled residuals: 
+    ##     Min      1Q  Median      3Q     Max 
+    ## -4.1898 -0.5273  0.0013  0.4899  4.9926 
+    ## 
+    ## Random effects:
+    ##  Groups   Name        Variance Std.Dev.
+    ##  subj_id  (Intercept) 3.497    1.870   
+    ##  Residual             3.177    1.782   
+    ## Number of obs: 9000, groups:  subj_id, 30
+    ## 
+    ## Fixed effects:
+    ##               Estimate Std. Error         df t value Pr(>|t|)    
+    ## (Intercept)    7.69472    0.34192   28.99999   22.50   <2e-16 ***
+    ## PE.gmc         1.84276    0.03753 8969.01109   49.11   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Correlation of Fixed Effects:
+    ##        (Intr)
+    ## PE.gmc 0.000
+
+``` r
+# used to quantify the change in (within) residual variance 
+# variance residuum m0 - variance residuum m1 / variance residuum m0 = 1- Variance residuum m1/variance residuum m0
+1 - summary(ModPE)$sigma^2/summary(mixmod_unc)$sigma^2
+```
+
+    ## [1] 0.2118037
+
+``` r
+## R^2pseudo:between
+# Variance Intercept modunc - Variance ModPE/Variance mixmod_unc = 1-Variance ModPE/Variance mixmod_unc
+1 - VarCorr(ModPE)$subj_id[1]/VarCorr(mixmod_unc)$subj_id[1]
+```
+
+    ## [1] -0.00107494
+
+``` r
+## R^2pseudo:bw (between and within)
+# explained variance of each model = variance intercept + residual variance
+# R^2pseudo:bw = 1-(Var.intercept ModPE + Var.residuum ModPE)/(Var. intercept mixedmod_unc + Var. Residuum mixedmod_unc)
+1 - (VarCorr(ModPE)$subj_id[1] + summary(ModPE)$sigma^2)/(VarCorr(mixmod_unc)$subj_id[1] + summary(mixmod_unc)$sigma^2)
+```
+
+    ## [1] 0.1129702
+
+``` r
+## if we want to include random slopes, we need to consider these sources of variances as well in our calculation
+```
+
 ``` r
 # fit a model with covariance of random effects set at zero
 maxModZeroCov<-lmer(RT~PE+PE+(PE||subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
@@ -330,6 +393,17 @@ anova(maxMod, maxModZeroCov )
     ## maxMod           6 4191.8 4234.4 -2089.9   4179.8 6.3997  1    0.01141 *
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+``` r
+# baseline model
+# m0 <-
+
+# add random effect
+# m1 <-
+  
+# make it more complex  
+# m2 <-
+```
 
 ``` r
 # create a categorical predictor between, simulating that we are randomly assigning participants
@@ -677,37 +751,6 @@ summary(ModCateg)
     ## boundary (singular) fit: see ?isSingular
 
 ``` r
-# ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
-# summary(ModCateg)
-# 
-# anova (ModCateg)
-# ModCateg2<-lmer(RT~PElevel+(-1+PElevel|subj_id)+(1|subj_id),data = df, control=lmerControl(optimizer="bobyqa"))
-# 
-# anova(ModCateg, ModCateg2)
-# 
-# summary(rePCA(ModCateg))
-# 
-# anova(maxModZeroCov)
-# # let's compare
-# anova(maxMod, maxModZeroCov )
-# 
-# # set contrasts
-# contrasts(df$PElevel)<-contr.poly(3)
-# ModCateg<-lmer(RT~PElevel+(1|subj_id/PElevel), data = df, control=lmerControl(optimizer="bobyqa"))
-# 
-# summary(ModCateg)
-# 
-# anova(ModCateg)
-# # bayesian
-# fit_b<-brm(RT~PElevel +(PElevel|subj_id),   #similar to lmwr
-#            
-#            warmup = 500, 
-#            iter = 2000, 
-#            chains = 2, 
-#            #prior = prior2,
-#            inits = "0", 
-#            cores=1,
-#            data=df)
 # try nlme
 library(nlme)
 ```
@@ -786,3 +829,9 @@ test.lme
     ## 
     ## Number of Observations: 9000
     ## Number of Groups: 30
+
+``` r
+# contr. poly
+
+# custom contrast
+```
