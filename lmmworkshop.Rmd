@@ -13,7 +13,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+### Load packages
 ```{r load packages, message=FALSE, warning=FALSE, paged.print=FALSE}
 # load the packages and source functions
 library(dplyr)
@@ -26,7 +26,7 @@ source("helper_functions/simulateData.R")
 options(scipen=5)
 ```
 
-Simulate data
+### Simulate data
 
 ```{r simulate Data}
 # set.seed
@@ -47,7 +47,7 @@ df<-my_sim_data(
 # show first row of simulated data
 head(df)
 ```
-    
+### Aggregate  
 
 ```{r aggregate}
 # We are assuming that RT are normally distributed
@@ -72,6 +72,8 @@ summary(linearmod)
 
 ```
 
+### Unconditional model, random intercepts
+
 ```{r lmmr rand int}
 
 # first, let's run an intercept only, unconditional model
@@ -87,6 +89,7 @@ paste("The IntraClass Correlation is",  ICC)
 
 ```
 
+### Test significance of random intercepts
 
 ```{r rand int test sig}
 
@@ -99,6 +102,7 @@ mixmod_unc<-lmer(RT~1+(1|subj_id), data = df)
 
 anova(mixmod_unc, mod_unc)
 ```
+### Simulation-based LRT
 
 ```{r sim based test}
 # use simulation based-test
@@ -106,7 +110,7 @@ exactLRT(mixmod_unc,mod_unc)
 
 
 ```
-
+### Maximal model
 
 ``` {r maximal}
 
@@ -123,7 +127,7 @@ summary(maxMod)
 
 anova(maxMod)
 ```
-
+### Centering
 
 
 ``` {r centering}
@@ -145,7 +149,8 @@ maxModCent<-lmer(RT~PE.cwc+PE.cmc+(1+PE.cwc|subj_id), data = df, control=lmerCon
 summary(maxModCent)
 
 ```
-How much variance does our predictor explain on level 1 and 2
+### How much variance does our predictor explain on level 1 and 2
+
 ```{r Calculating R2pseudo between, within and between-within}
 
 ## R^2pseudo:within
@@ -170,6 +175,7 @@ summary(ModPE)
 
 ```
 
+### Model selection backward
 ``` {r model selection backward}
 
 # fit a model with covariance of random effects set at zero
@@ -182,6 +188,9 @@ anova(maxMod, maxModZeroCov )
 
 
 ```
+
+# Excercise1
+
 ```{r  exercise1 model selection forward}
 
 # baseline model
@@ -195,6 +204,7 @@ anova(maxMod, maxModZeroCov )
 
 
 ```
+### Categorical predictor between
 
 ``` {r categorical predictor between}
 
@@ -238,6 +248,7 @@ summary(bwlm)
 anova(bwlm)
 
 ```
+### Setting contrasts
 
 ``` {r setting contrasts}
 # method 1: contrast poly
@@ -264,6 +275,8 @@ summary(bwlmContrCust)
           
 ```
 
+### Continuous predictor between
+
 ``` {r continuous predictor between}
 
 # what if we convert the categorical into continuous?
@@ -289,7 +302,7 @@ bwlmC<-lm(RT~PEbwC, data=df_agg)
 summary(bwlmC)
 
 ```
-
+### Categorical predictor within. EZ
 
 ``` {r categorical predictor within ez}
 
@@ -319,6 +332,7 @@ ezModel<-ezANOVA(data = df_aggbw, # dataframe
 
 ezModel
 ```
+### Categorical predictor within: mixed-effects
 
 ``` {r categorical predictor within mixed-effects}
 
@@ -337,6 +351,8 @@ test.lme<-lme(fixed = RT~PElevel,
 summary(test.lme)
 test.lme
 ```
+
+### excercise2
 
 ```{r  exercise2 contrasts for within lmm}
 # contr. poly
