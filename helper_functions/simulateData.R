@@ -78,6 +78,11 @@
         mutate(RT = beta_0 + T_0s + (beta_PE + T_1s)*PE  + e_si)# %>% 
       # add the smallest value to make it positive (absolute number)
       dat_sim$RT<-dat_sim$RT+abs(min(dat_sim$RT))
+      
+      # shuffle trials to create some variability among them
+      dat_sim<-dat_sim %>%
+        group_by(subj_id)%>%
+        mutate(item_id = sample(item_id))
      # hist(dat_sim$RT)
       #dat_sim$RT<-dexp(dat_sim$RT, rate=0.25)
       # add 500 ms
@@ -92,10 +97,10 @@
         mutate(rec_acc = beta_0 + T_0s + (beta_PE + T_1s)*PE  + e_si)
       # convert the log odds into proportions
       # read https://aosmith.rbind.io/2020/08/20/simulate-binomial-glmm/#a-single-simulation-for-a-binomial-glmm for a referencep 
-      simData$rec_acc  <-plogis(simData$rec_acc)
+      dat_sim$rec_acc  <-plogis(dat_sim$rec_acc)
       # convert into binomial
-      for (n in 1:nrow(simData)){
-        simData$rec_acc[n]<-rbinom(1, 1, prob = simData$rec_acc[n])
+      for (n in 1:nrow(dat_sim)){
+        dat_sim$rec_acc[n]<-rbinom(1, 1, prob = dat_sim$rec_acc[n])
       }
     
     }

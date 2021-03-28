@@ -1,0 +1,117 @@
+---
+title: "Plot and Analyze Phase 3 PREMUP"
+author: "Francesco Pupillo"
+date: "20/10/2020"
+output:
+  md_document:
+    variant: markdown_github
+    toc: true
+    toc_depth: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# What are Multilevel Models?
+Multilevel models are special cases of linear mixed models where the data structure is nested, meaning that every data point (level 1) appear in only one level of higher-level variable (level-2). Examples are kids (level 1) nested in schools (level 2) or patients in clinics. In cogntive psychology studies, the level 1 is usually represented by the single observations which are nested whithin participants. 
+In contrast to a general linear model, where a model is fit for the entire group, in multilevel models we fit one model for each cluster (or participant, in our case). This is achieved by using **random effects**, namely effects that vary from cluster to cluster (or between participants). 
+These effects are usually random intercepts and random slopes, that are assumed to vary between participants in our sample as in the general population. 
+
+
+## First, retrieve and inspection the data
+In order to use ggplot and to analyse the data with MLMs, we need to have data arranged in a long format. Contrarily to a wide format, were every row represents a participant, in a long format dataset each row corresponds to an observation. 
+```{r, message=F}
+# retrieve data
+data<-read.csv("DataLongObj.csv")
+
+# snapshot of the first part of the dataset
+print(data[1:10,])
+
+# this is a long format
+
+# set the the order of the levels of PE. This is important for plotting
+data$PE<-factor(data$PE, levels=c("low", "medium", "high"))
+
+# rename the levels of the rec_session to "immediate" and "delayed"
+# first, let's convert from numeric to factor
+data$rec_session<-as.factor(data$rec_session)
+
+# now rename the levels
+levels(data$rec_session)<-c("Immediate", "Delayed")
+
+print(data[1:10,])
+
+
+```
+
+Now the plot
+
+
+```{r echo=T, message=F}
+library(ggplot2)
+library(dplyr) # package to summarise and aggregate data. I use it to have descriptive statistics
+ 
+# to plot the performance, let' aggregate at the participant level, so each point represent a participant
+data$particip_code<-as.factor(data$particip_code)
+
+datasub<-group_by ( data, particip_code, PE, rec_session)%>%
+  summarise(rec_acc= mean(rec_acc, na.rm=T))
+
+ggplot(datasub, aes(PE, rec_acc))+
+  geom_bar(aes(PE, rec_acc, fill = PE),
+           position="dodge",stat="summary")+
+  geom_point()+
+  stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )+ # this line adds error bars
+  theme_classic()+ # changing the default theme
+  facet_grid(.~rec_session)+ # split the graphs orizontally according to rec_session
+  theme(axis.text.x = element_blank())+ # we are showing the different levels through the colors, so we can avoid naming the bars
+  theme(axis.ticks.x = element_blank()) # and we can remove the ticks
+```
+
+Alternative plot, without colors
+```{r echo=T, message=FALSE, warning=FALSE, results='hide'}
+ggplot(data, aes(PE, rec_acc))+ geom_bar(aes(PE, rec_acc),
+                                         position="dodge",stat="summary")+
+  geom_point()~
+  facet_grid(.~rec_session)+ # split the graphs orizontally according to rec_session
+  stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )+ 
+  theme_minimal()
+
+```
+
+But it is a bit sad, isn't it?
+
+## MLM analysis
+Now we want to analyse the data using MLMs, in order to model random slopes and intercepts for participants. 
+
+```{r MLM, echo=T, message=FALSE, warning=FALSE}
+
+library(lme4) # package that contains the formula for MLMs
+library(car)
+
+# First, let's get some descriptives
+
+data %>%
+  group_by ( rec_session, PE) %>%
+  summarise(mean=mean(rec_acc, na.rm=T))
+```
+
+Now analyse. Description of the R syntax for MLM can be found [here](https://gitlab.com/Soph87/LISCOlab/-/blob/master/MLM%20Analysis/interpret_output.pdf)
+```{r MLM2, echo=T, message=FALSE, warning=FALSE}
+# we are using glmer function (generalised linear mixed model) because our dependent variable (recognition accuracy) is binary. For this reason, 
+# we also specify the "binomial" link function. We could also call the model "Multilevel generalized linear models"
+# We are looking for an interaction between PE and the session. Data are repeated in the two rec_sessions and nested
+# within participants. Thus, we are including random intercepts for participants, and random slopes for rec_session and PE, as well as randon slopes for their interaction. 
+MLMmodel<- glmer(rec_acc~PE*rec_session+(rec_session*PE|particip_code), family= binomial, data=data)
+summary(MLMmodel)
+
+# Here the results for the different levels of PE are shown in the form of contrasts
+
+# We could use "Anova" from the "car" package to get the overall effect of PE (Wald Chi-square)
+Anova(MLMmodel)
+
+
+```
+
+Interpretation of this output can be found [here](https://gitlab.com/Soph87/LISCOlab/-/blob/master/MLM%20Analysis/interpret_output.pdf)

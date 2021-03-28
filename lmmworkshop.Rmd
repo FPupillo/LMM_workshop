@@ -119,9 +119,6 @@ exactLRT(mixmod_unc,mod_unc)
   geom_line(stat="smooth", method= "lm", formula = y~x, alpha = 0.5)+aes(colour = factor(subj_id))+
   geom_smooth(method="lm", colour="black")
 
-
-
-
 maxMod<-lmer(RT~PE+(1+PE|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
 summary(maxMod)
 
@@ -194,11 +191,11 @@ anova(maxMod, maxModZeroCov )
 ```{r  exercise1 model selection forward}
 
 # baseline model
-# m0 <-
+# m0 <- 
 
-# add random effect
+# random effects
 # m1 <-
-  
+
 # make it more complex  
 # m2 <-
 
@@ -214,6 +211,7 @@ PEbet<-rep(c("HighPE", "LowPE", "MediumPE"), each= nrow(df_agg)/3)
 
 # created the levels in the aggregated dataset
   # pick random subject
+set.seed(1234)
   df_agg$PEbw<-sample(PEbet, nrow(df_agg), replace = F)
   
   # we want it as factor
@@ -331,6 +329,9 @@ ezModel<-ezANOVA(data = df_aggbw, # dataframe
                  )
 
 ezModel
+
+
+
 ```
 # Categorical predictor within: mixed-effects
 
@@ -350,6 +351,8 @@ test.lme<-lme(fixed = RT~PElevel,
 
 summary(test.lme)
 test.lme
+
+
 ```
 
 # excercise2
@@ -359,5 +362,119 @@ test.lme
 
 # custom contrast
 
+
+```
+
+# logistic regression simulate files
+```{r log sim }
+set.seed(1234)
+df_acc<-my_sim_data(   
+  SubN = 30,
+  beta_0 = 0.60, # grand mean (fixed intercept)
+  PEmean = 0.30,# PEmean
+  beta_PE = 1.28, # effect of PE (fixed slope)
+  n_items = 300, # number of trials
+  tau_0 = 1.80, # by-subject random intercept sd .Check if it is sd, because than it will be squared into variance
+  tau_1 = 2.50, # by-subject random slope sd
+  rho = 0.3, # correlation between intercept and slope
+  sigma = 0.2, # residual standard deviation
+  RTorACC = 2 # Reaction times or accuracy (1 = RT, 2 = accuracy)
+  )
+
+# show first row of simulated data
+head(df_acc)
+
+```
+
+```{r run logistic regression}
+
+logmod<-glm(rec_acc~PE, data = df_acc, family = binomial)
+
+summary(logmod)
+
+# take the exponential of the coefficients to get the ODDS
+OR <- exp(logmod$coefficients)
+
+# calculate confidence intervals for the odds ratio
+exp(confint(logmod))
+
+
+```
+```{r run generalised linear mixed-effects model}
+
+# first, visualize the data
+  ggplot(df_acc, aes(rec_acc, x = PE))+
+  geom_line(stat="smooth", method= "glm", formula = y~x,method.args=list(family="binomial"), alpha = 0.5)+
+  aes(colour = factor(subj_id))+
+  geom_smooth(method="glm", method.args=list(family="binomial"),colour="black")
+
+  
+GLMMmod<-glmer(rec_acc~PE+(PE|subj_id), data = df_acc, family = binomial)
+
+GLMMmodsum<-summary(GLMMmod)
+
+GLMMmodsum
+
+# take the exponential of the coefficients to get the ODDS
+OR <- exp(GLMMmodsum$coefficients)
+
+# calculate confidence intervals for the odds ratio
+# Attention: it takes a long time to estimate!
+# exp(confint(GLMMmod))
+
+```
+
+```{r run generalised linear mixed-effects model categorical}
+# convert PElevel to a factor
+df_acc$PElevel<-as.factor(df_acc$PElevel)
+
+# plot 
+ggplot(df_acc, aes(PElevel, rec_acc))+
+  geom_bar(aes(PElevel, rec_acc, fill = PElevel),
+           position="dodge",stat="summary")
+#stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )# this line adds error bars
+
+# model
+GLMMmodCat<-glmer(rec_acc~PElevel+(PElevel|subj_id), data = df_acc, family = binomial)
+summary(GLMMmodCat)
+
+```
+
+OR <- exp(fixef(GLMMmodCat))
+
+# calculate confidence intervals for the odds ratio
+exp(confint(GLMMmodCat))
+
+
+
+``` {r parametric bootstrapping}
+library(afex)
+
+# Beware=: it takes time!
+mixed(rec_acc~PElevel+(PElevel|subj_id),family = binomial,method = "PB",
+      data=df_acc)
+```
+
+allFit(ModCateg)
+ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="nmkbw",optCtrl=list(maxfun=1000000)))
+
+df$PEleveSc<-scale(df$PElevel)
+
+# Extra
+# plot the regression line and the confidence intervals taking into account random effects
+``` {r plot regression mixed-effects}
+# get the packages for obtaining effects
+library(effects)
+# get the effects for PE, including confidence intervals
+effect_PE<-effects::effect(term = "PE", mod=maxMod)
+summary(effect_PE)
+
+# as datafra,e
+effect_PE<-as.data.frame(effect_PE)
+
+ggplot()+ 
+geom_line(data=df, aes(y=RT, x = PE, colour=factor(subj_id)),  stat="smooth", method= "lm", formula = y~x, alpha = 0.5)+
+geom_line(data=effect_PE, aes(x = PE, y = fit))+
+geom_ribbon(data=effect_PE, aes(x=PE, ymin = lower, ymax=upper), alpha=0.3)
 
 ```
