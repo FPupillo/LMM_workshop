@@ -438,13 +438,13 @@ ggplot(df_acc, aes(PElevel, rec_acc))+
 GLMMmodCat<-glmer(rec_acc~PElevel+(PElevel|subj_id), data = df_acc, family = binomial)
 summary(GLMMmodCat)
 
-```
-
-OR <- exp(fixef(GLMMmodCat))
+# get OR
+OR <- exp(coef(GLMMmodCat))
 
 # calculate confidence intervals for the odds ratio
-exp(confint(GLMMmodCat))
-
+# Attention: it takes a really long time. 
+# exp(confint(GLMMmodCat))
+```
 
 
 ``` {r parametric bootstrapping}
@@ -455,13 +455,10 @@ mixed(rec_acc~PElevel+(PElevel|subj_id),family = binomial,method = "PB",
       data=df_acc)
 ```
 
-allFit(ModCateg)
-ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="nmkbw",optCtrl=list(maxfun=1000000)))
 
-df$PEleveSc<-scale(df$PElevel)
 
 # Extra
-# plot the regression line and the confidence intervals taking into account random effects
+# plot the regression line and confidence intervals taking into account random effects
 ``` {r plot regression mixed-effects}
 # get the packages for obtaining effects
 library(effects)
