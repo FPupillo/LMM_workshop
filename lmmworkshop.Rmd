@@ -7,7 +7,7 @@ output:
     variant: markdown_github
     toc: true
     toc_depth: 1
-    number_sections: true
+    #number_sections: F
 ---
 
 ```{r setup, include=FALSE}
@@ -439,7 +439,7 @@ GLMMmodCat<-glmer(rec_acc~PElevel+(PElevel|subj_id), data = df_acc, family = bin
 summary(GLMMmodCat)
 
 # get OR
-OR <- exp(coef(GLMMmodCat))
+OR <- exp(fixef(GLMMmodCat))
 
 # calculate confidence intervals for the odds ratio
 # Attention: it takes a really long time. 
@@ -451,8 +451,8 @@ OR <- exp(coef(GLMMmodCat))
 library(afex)
 
 # Beware=: it takes time!
-mixed(rec_acc~PElevel+(PElevel|subj_id),family = binomial,method = "PB",
-      data=df_acc)
+# mixed(rec_acc~PElevel+(PElevel|subj_id),family = binomial,method = "PB",
+#      data=df_acc)
 ```
 
 
