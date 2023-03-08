@@ -343,7 +343,7 @@ summary(ModCateg)
 
 # do post-hoc tests
 library(emmeans)
-emmeans(ModCateg, list(pairwise~PElevel), adjust = 'bonferroni')
+emmeans(ModCateg, list(pairwise~PElevel),paired = T, adjust = 'bonferroni')
 
 # try nlme
 library(nlme)

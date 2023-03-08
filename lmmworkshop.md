@@ -806,7 +806,7 @@ summary(ModCateg)
 ``` r
 # do post-hoc tests
 library(emmeans)
-emmeans(ModCateg, list(pairwise~PElevel), adjust = 'bonferroni')
+emmeans(ModCateg, list(pairwise~PElevel),paired = T, adjust = 'bonferroni')
 ```
 
     ## Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
