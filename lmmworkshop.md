@@ -27,8 +27,7 @@
     account random
     effects](#plot-the-regression-line-and-confidence-intervals-taking-into-account-random-effects)
 
-Load packages
-=============
+# Load packages
 
 ``` r
 # load the packages and source functions
@@ -42,8 +41,7 @@ source("helper_functions/simulateData.R")
 options(scipen=5)
 ```
 
-Simulate data
-=============
+# Simulate data
 
 ``` r
 # set.seed
@@ -65,7 +63,7 @@ df<-my_sim_data(
 head(df)
 ```
 
-    ## # A tibble: 6 x 8
+    ## # A tibble: 6 × 8
     ## # Groups:   subj_id [1]
     ##   subj_id  T_0s  T_1s item_id     PE     e_si    RT PElevel
     ##     <int> <dbl> <dbl>   <int>  <dbl>    <dbl> <dbl>   <dbl>
@@ -76,8 +74,7 @@ head(df)
     ## 5       1  2.42  2.44     109  0.121 -0.338    9.85       2
     ## 6       1  2.42  2.44     118 -0.554 -0.555    7.13       2
 
-Aggregate
-=========
+# Aggregate
 
 ``` r
 # We are assuming that RT are normally distributed
@@ -93,7 +90,7 @@ ggplot(df_agg, aes(y=RT, x = PE))+
   geom_smooth(method="lm")
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](lmmworkshop_files/figure-markdown_github/aggregate-1.png)
 
@@ -122,8 +119,7 @@ summary(linearmod)
     ## Multiple R-squared:  0.0002105,  Adjusted R-squared:  -0.0355 
     ## F-statistic: 0.005897 on 1 and 28 DF,  p-value: 0.9393
 
-Unconditional model, random intercepts
-======================================
+# Unconditional model, random intercepts
 
 ``` r
 # first, let's run an intercept only, unconditional model
@@ -166,8 +162,7 @@ paste("The IntraClass Correlation is",  ICC)
 
     ## [1] "The IntraClass Correlation is 0.464271789380495"
 
-Test significance of random intercepts
-======================================
+# Test significance of random intercepts
 
 ``` r
 # test significance
@@ -192,8 +187,7 @@ anova(mixmod_unc, mod_unc)
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Simulation-based LRT
-====================
+# Simulation-based LRT
 
 ``` r
 # use simulation based-test
@@ -213,8 +207,7 @@ exactLRT(mixmod_unc,mod_unc)
     ## data:  
     ## LRT = 5310.3, p-value < 2.2e-16
 
-Maximal model
-=============
+# Maximal model
 
 ``` r
 # plot
@@ -223,7 +216,7 @@ Maximal model
   geom_smooth(method="lm", colour="black")
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](lmmworkshop_files/figure-markdown_github/maximal-1.png)
 
@@ -246,15 +239,15 @@ summary(maxMod)
     ## 
     ## Random effects:
     ##  Groups   Name        Variance Std.Dev. Corr
-    ##  subj_id  (Intercept)  2.50371 1.5823       
-    ##           PE          12.62806 3.5536   0.44
+    ##  subj_id  (Intercept)  2.50370 1.5823       
+    ##           PE          12.62810 3.5536   0.44
     ##  Residual              0.08771 0.2962       
     ## Number of obs: 9000, groups:  subj_id, 30
     ## 
     ## Fixed effects:
     ##             Estimate Std. Error      df t value Pr(>|t|)    
-    ## (Intercept)   7.4325     0.2889 28.9999  25.726  < 2e-16 ***
-    ## PE            1.8175     0.6488 29.0001   2.801  0.00897 ** 
+    ## (Intercept)   7.4325     0.2889 29.0000  25.726  < 2e-16 ***
+    ## PE            1.8175     0.6488 29.0000   2.801  0.00897 ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
@@ -268,12 +261,11 @@ anova(maxMod)
 
     ## Type III Analysis of Variance Table with Satterthwaite's method
     ##     Sum Sq Mean Sq NumDF DenDF F value   Pr(>F)   
-    ## PE 0.68828 0.68828     1    29  7.8469 0.008972 **
+    ## PE 0.68828 0.68828     1    29  7.8468 0.008972 **
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Centering
-=========
+# Centering
 
 ``` r
 # grand mean centring and person mean centring
@@ -308,7 +300,7 @@ summary(maxModCent)
     ## Random effects:
     ##  Groups   Name        Variance Std.Dev. Corr
     ##  subj_id  (Intercept)  3.57840 1.8917       
-    ##           PE.cwc      12.62807 3.5536   0.64
+    ##           PE.cwc      12.62805 3.5536   0.64
     ##  Residual              0.08771 0.2962       
     ## Number of obs: 9000, groups:  subj_id, 30
     ## 
@@ -325,8 +317,7 @@ summary(maxModCent)
     ## PE.cwc 0.639        
     ## PE.cmc 0.000  0.000
 
-How much variance does our predictor explain on level 1 and 2
-=============================================================
+# How much variance does our predictor explain on level 1 and 2
 
 ``` r
 ## R^2pseudo:within
@@ -393,8 +384,7 @@ summary(ModPE)
 ## if we want to include random slopes, we need to consider these sources of variances as well in our calculation
 ```
 
-Model selection backward
-========================
+# Model selection backward
 
 ``` r
 # fit a model with covariance of random effects set at zero
@@ -418,13 +408,13 @@ summary(maxModZeroCov)
     ## Random effects:
     ##  Groups    Name        Variance Std.Dev.
     ##  subj_id   (Intercept)  2.50377 1.5823  
-    ##  subj_id.1 PE          12.62840 3.5536  
+    ##  subj_id.1 PE          12.62842 3.5536  
     ##  Residual               0.08771 0.2962  
     ## Number of obs: 9000, groups:  subj_id, 30
     ## 
     ## Fixed effects:
     ##             Estimate Std. Error      df t value Pr(>|t|)    
-    ## (Intercept)   7.4325     0.2889 28.9999  25.726  < 2e-16 ***
+    ## (Intercept)   7.4325     0.2889 28.9997  25.726  < 2e-16 ***
     ## PE            1.8175     0.6488 29.0000   2.801  0.00897 ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
@@ -450,8 +440,7 @@ anova(maxMod, maxModZeroCov )
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-Excercise1
-==========
+# Excercise1
 
 ``` r
 # baseline model
@@ -464,8 +453,7 @@ Excercise1
 # m2 <-
 ```
 
-Categorical predictor between
-=============================
+# Categorical predictor between
 
 ``` r
 # create a categorical predictor between, simulating that we are randomly assigning participants
@@ -486,9 +474,9 @@ df_agg %>%
   summarise(mean=mean(RT), sd = sd(RT))
 ```
 
-    ## # A tibble: 3 x 3
+    ## # A tibble: 3 × 3
     ##   PEbw      mean    sd
-    ## * <fct>    <dbl> <dbl>
+    ##   <fct>    <dbl> <dbl>
     ## 1 HighPE    8.43  2.26
     ## 2 LowPE     6.77  1.41
     ## 3 MediumPE  7.89  1.62
@@ -501,6 +489,9 @@ ggplot(df_agg, aes(PEbw, RT))+
   geom_point()+
   stat_summary(fun.data = "mean_cl_boot", size = 0.8, geom="errorbar", width=0.2 )# this line adds error bars
 ```
+
+    ## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+    ## ℹ Please use `linewidth` instead.
 
     ## No summary function supplied, defaulting to `mean_se()`
 
@@ -574,8 +565,7 @@ anova(bwlm)
     ## PEbw       2 14.264  7.1318  2.2027   0.13
     ## Residuals 27 87.418  3.2377
 
-Setting contrasts
-=================
+# Setting contrasts
 
 ``` r
 # method 1: contrast poly
@@ -643,8 +633,7 @@ summary(bwlmContrCust)
     ## Multiple R-squared:  0.1403, Adjusted R-squared:  0.07659 
     ## F-statistic: 2.203 on 2 and 27 DF,  p-value: 0.13
 
-Continuous predictor between
-============================
+# Continuous predictor between
 
 ``` r
 # what if we convert the categorical into continuous?
@@ -665,7 +654,7 @@ ggplot(df_agg, aes(y=RT, x = PEbwC))+
   geom_smooth(method="lm")
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](lmmworkshop_files/figure-markdown_github/continuous%20predictor%20between-1.png)
 
@@ -695,8 +684,7 @@ summary(bwlmC)
     ## Multiple R-squared:  0.1061, Adjusted R-squared:  0.07416 
     ## F-statistic: 3.323 on 1 and 28 DF,  p-value: 0.07901
 
-Categorical predictor within. EZ
-================================
+# Categorical predictor within. EZ
 
 ``` r
 # we have a categorical variable in the dataset, which is PElevel
@@ -716,13 +704,14 @@ df_aggbw<-df %>%
           summarise(RT=mean(RT))
 ```
 
-    ## `summarise()` has grouped output by 'subj_id'. You can override using the `.groups` argument.
+    ## `summarise()` has grouped output by 'subj_id'. You can override using the
+    ## `.groups` argument.
 
 ``` r
 head(df_aggbw)
 ```
 
-    ## # A tibble: 6 x 3
+    ## # A tibble: 6 × 3
     ## # Groups:   subj_id [2]
     ##   subj_id PElevel    RT
     ##     <int> <fct>   <dbl>
@@ -736,16 +725,6 @@ head(df_aggbw)
 ``` r
 # ezanova
 library(ez)
-```
-
-    ## Registered S3 methods overwritten by 'car':
-    ##   method                          from
-    ##   influence.merMod                lme4
-    ##   cooks.distance.influence.merMod lme4
-    ##   dfbeta.influence.merMod         lme4
-    ##   dfbetas.influence.merMod        lme4
-
-``` r
 ezModel<-ezANOVA(data = df_aggbw, # dataframe
                  dv = .(RT), # dependent variable. This functions requires to place the name of each variable within .() 
                  wid = .(subj_id), # variable that identifies participants )
@@ -776,15 +755,14 @@ ezModel
     ##    Effect       GGe       p[GG] p[GG]<.05       HFe       p[HF] p[HF]<.05
     ## 2 PElevel 0.5005596 0.008167513         * 0.5006196 0.008165235         *
 
-Categorical predictor within: mixed-effects
-===========================================
+# Categorical predictor within: mixed-effects
 
 ``` r
 # 
 ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
 ```
 
-    ## boundary (singular) fit: see ?isSingular
+    ## boundary (singular) fit: see help('isSingular')
 
 ``` r
 summary(ModCateg)
@@ -804,17 +782,17 @@ summary(ModCateg)
     ## 
     ## Random effects:
     ##  Groups   Name        Variance Std.Dev. Corr       
-    ##  subj_id  (Intercept)  6.070   2.4638              
+    ##  subj_id  (Intercept)  6.070   2.4637              
     ##           PElevel2     3.960   1.9899   -0.81      
-    ##           PElevel3    22.960   4.7916   -0.82  1.00
+    ##           PElevel3    22.959   4.7915   -0.82  1.00
     ##  Residual              0.963   0.9813              
     ## Number of obs: 9000, groups:  subj_id, 30
     ## 
     ## Fixed effects:
     ##             Estimate Std. Error      df t value Pr(>|t|)    
-    ## (Intercept)   6.0170     0.4520 29.0720  13.311 6.73e-14 ***
-    ## PElevel2      1.0267     0.3664 29.0676   2.802  0.00894 ** 
-    ## PElevel3      2.4814     0.8761 29.0106   2.832  0.00832 ** 
+    ## (Intercept)   6.0170     0.4520 29.0737  13.311 6.73e-14 ***
+    ## PElevel2      1.0267     0.3664 29.0693   2.802  0.00894 ** 
+    ## PElevel3      2.4814     0.8761 29.0123   2.832  0.00831 ** 
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
@@ -823,7 +801,41 @@ summary(ModCateg)
     ## PElevel2 -0.814       
     ## PElevel3 -0.819  0.996
     ## optimizer (bobyqa) convergence code: 0 (OK)
-    ## boundary (singular) fit: see ?isSingular
+    ## boundary (singular) fit: see help('isSingular')
+
+``` r
+# do post-hoc tests
+library(emmeans)
+emmeans(ModCateg, list(pairwise~PElevel), adjust = 'bonferroni')
+```
+
+    ## Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
+    ## To enable adjustments, add the argument 'pbkrtest.limit = 9000' (or larger)
+    ## [or, globally, 'set emm_options(pbkrtest.limit = 9000)' or larger];
+    ## but be warned that this may result in large computation time and memory use.
+
+    ## Note: D.f. calculations have been disabled because the number of observations exceeds 3000.
+    ## To enable adjustments, add the argument 'lmerTest.limit = 9000' (or larger)
+    ## [or, globally, 'set emm_options(lmerTest.limit = 9000)' or larger];
+    ## but be warned that this may result in large computation time and memory use.
+
+    ## $`emmeans of PElevel`
+    ##  PElevel emmean    SE  df asymp.LCL asymp.UCL
+    ##  1         6.02 0.452 Inf      5.13      6.90
+    ##  2         7.04 0.262 Inf      6.53      7.56
+    ##  3         8.50 0.569 Inf      7.38      9.61
+    ## 
+    ## Degrees-of-freedom method: asymptotic 
+    ## Confidence level used: 0.95 
+    ## 
+    ## $`pairwise differences of PElevel`
+    ##  1                   estimate    SE  df z.ratio p.value
+    ##  PElevel1 - PElevel2    -1.03 0.366 Inf  -2.802  0.0152
+    ##  PElevel1 - PElevel3    -2.48 0.876 Inf  -2.832  0.0139
+    ##  PElevel2 - PElevel3    -1.45 0.512 Inf  -2.841  0.0135
+    ## 
+    ## Degrees-of-freedom method: asymptotic 
+    ## P value adjustment: bonferroni method for 3 tests
 
 ``` r
 # try nlme
@@ -905,8 +917,7 @@ test.lme
     ## Number of Observations: 9000
     ## Number of Groups: 30
 
-excercise2
-==========
+# excercise2
 
 ``` r
 # contr. poly
@@ -914,8 +925,7 @@ excercise2
 # custom contrast
 ```
 
-logistic regression simulate files
-==================================
+# logistic regression simulate files
 
 ``` r
 set.seed(1234)
@@ -936,7 +946,7 @@ df_acc<-my_sim_data(
 head(df_acc)
 ```
 
-    ## # A tibble: 6 x 8
+    ## # A tibble: 6 × 8
     ##   subj_id  T_0s  T_1s item_id     PE     e_si rec_acc PElevel
     ##     <int> <dbl> <dbl>   <int>  <dbl>    <dbl>   <dbl>   <dbl>
     ## 1       1  2.42  2.44       1 -0.390  0.261         1       2
@@ -997,7 +1007,7 @@ exp(confint(logmod))
   geom_smooth(method="glm", method.args=list(family="binomial"),colour="black")
 ```
 
-    ## `geom_smooth()` using formula 'y ~ x'
+    ## `geom_smooth()` using formula = 'y ~ x'
 
 ![](lmmworkshop_files/figure-markdown_github/run%20generalised%20linear%20mixed-effects%20model-1.png)
 
@@ -1030,14 +1040,14 @@ GLMMmodsum
     ## 
     ## Fixed effects:
     ##             Estimate Std. Error z value Pr(>|z|)   
-    ## (Intercept)   0.7932     0.3227   2.458   0.0140 * 
-    ## PE            2.1652     0.6779   3.194   0.0014 **
+    ## (Intercept)   0.7932     0.3226   2.459  0.01395 * 
+    ## PE            2.1652     0.6773   3.197  0.00139 **
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
     ## Correlation of Fixed Effects:
     ##    (Intr)
-    ## PE 0.606
+    ## PE 0.605
 
 ``` r
 # take the exponential of the coefficients to get the ODDS
@@ -1067,6 +1077,12 @@ ggplot(df_acc, aes(PElevel, rec_acc))+
 
 # model
 GLMMmodCat<-glmer(rec_acc~PElevel+(PElevel|subj_id), data = df_acc, family = binomial)
+```
+
+    ## Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :
+    ## Model failed to converge with max|grad| = 0.00405421 (tol = 0.002, component 1)
+
+``` r
 summary(GLMMmodCat)
 ```
 
@@ -1081,20 +1097,20 @@ summary(GLMMmodCat)
     ## 
     ## Scaled residuals: 
     ##      Min       1Q   Median       3Q      Max 
-    ## -11.6341  -0.5572   0.1683   0.5044   3.9011 
+    ## -11.6349  -0.5572   0.1680   0.5044   3.9011 
     ## 
     ## Random effects:
     ##  Groups  Name        Variance Std.Dev. Corr       
-    ##  subj_id (Intercept)  4.236   2.058               
-    ##          PElevel2     3.389   1.841    -0.86      
-    ##          PElevel3    22.146   4.706    -0.81  0.99
+    ##  subj_id (Intercept)  4.251   2.062               
+    ##          PElevel2     3.409   1.846    -0.86      
+    ##          PElevel3    22.253   4.717    -0.81  0.99
     ## Number of obs: 9000, groups:  subj_id, 30
     ## 
     ## Fixed effects:
     ##             Estimate Std. Error z value Pr(>|z|)   
-    ## (Intercept)  -0.8658     0.4044  -2.141  0.03230 * 
-    ## PElevel2      1.0845     0.3694   2.936  0.00333 **
-    ## PElevel3      2.7497     0.8813   3.120  0.00181 **
+    ## (Intercept)  -0.8682     0.4048  -2.145  0.03197 * 
+    ## PElevel2      1.0877     0.3702   2.938  0.00330 **
+    ## PElevel3      2.7569     0.8835   3.120  0.00181 **
     ## ---
     ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
     ## 
@@ -1102,6 +1118,8 @@ summary(GLMMmodCat)
     ##          (Intr) PElvl2
     ## PElevel2 -0.880       
     ## PElevel3 -0.794  0.948
+    ## optimizer (Nelder_Mead) convergence code: 0 (OK)
+    ## Model failed to converge with max|grad| = 0.00405421 (tol = 0.002, component 1)
 
 ``` r
 # get OR
@@ -1113,39 +1131,16 @@ OR <- exp(fixef(GLMMmodCat))
 ```
 
 ``` r
-library(afex)
-```
+#library(afex)
 
-    ## ************
-    ## Welcome to afex. For support visit: http://afex.singmann.science/
-
-    ## - Functions for ANOVAs: aov_car(), aov_ez(), and aov_4()
-    ## - Methods for calculating p-values with mixed(): 'KR', 'S', 'LRT', and 'PB'
-    ## - 'afex_aov' and 'mixed' objects can be passed to emmeans() for follow-up tests
-    ## - NEWS: library('emmeans') now needs to be called explicitly!
-    ## - Get and set global package options with: afex_options()
-    ## - Set orthogonal sum-to-zero contrasts globally: set_sum_contrasts()
-    ## - For example analyses see: browseVignettes("afex")
-    ## ************
-
-    ## 
-    ## Attaching package: 'afex'
-
-    ## The following object is masked from 'package:lme4':
-    ## 
-    ##     lmer
-
-``` r
 # Beware=: it takes time!
 # mixed(rec_acc~PElevel+(PElevel|subj_id),family = binomial,method = "PB",
 #      data=df_acc)
 ```
 
-Extra
-=====
+# Extra
 
-plot the regression line and confidence intervals taking into account random effects
-====================================================================================
+# plot the regression line and confidence intervals taking into account random effects
 
 ``` r
 # get the packages for obtaining effects
@@ -1172,12 +1167,12 @@ summary(effect_PE)
     ##  Lower 95 Percent Confidence Limits
     ## PE
     ##       -1     -0.5    0.001      0.5        1 
-    ## 4.471736 5.883835 6.867400 7.321023 7.646953 
+    ## 4.471735 5.883835 6.867400 7.321022 7.646951 
     ## 
     ##  Upper 95 Percent Confidence Limits
     ## PE
     ##        -1      -0.5     0.001       0.5         1 
-    ##  6.758181  7.163589  8.001165  9.361414 10.852991
+    ##  6.758182  7.163589  8.001165  9.361415 10.852993
 
 ``` r
 # as datafra,e

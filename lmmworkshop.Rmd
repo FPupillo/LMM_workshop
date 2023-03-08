@@ -341,6 +341,10 @@ ezModel
 ModCateg<-lmer(RT~PElevel+(PElevel|subj_id), data = df, control=lmerControl(optimizer="bobyqa"))
 summary(ModCateg)
 
+# do post-hoc tests
+library(emmeans)
+emmeans(ModCateg, list(pairwise~PElevel), adjust = 'bonferroni')
+
 # try nlme
 library(nlme)
 test.lme<-lme(fixed = RT~PElevel, 
@@ -448,7 +452,7 @@ OR <- exp(fixef(GLMMmodCat))
 
 
 ``` {r parametric bootstrapping}
-library(afex)
+#library(afex)
 
 # Beware=: it takes time!
 # mixed(rec_acc~PElevel+(PElevel|subj_id),family = binomial,method = "PB",
