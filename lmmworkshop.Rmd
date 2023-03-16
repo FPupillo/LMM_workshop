@@ -479,3 +479,16 @@ geom_line(data=effect_PE, aes(x = PE, y = fit))+
 geom_ribbon(data=effect_PE, aes(x=PE, ymin = lower, ymax=upper), alpha=0.3)
 
 ```
+
+# add linear trends instead of single predictors
+```{r}
+
+contrast<-c(-1,0,1)
+
+contrasts(df$PElevel)<-contrast
+
+GLMMmodContr<-glmer(rec_acc~PElevel+(PElevel|subj_id), data = df_acc, family = binomial)
+summary(GLMMmodContr)
+
+```
+

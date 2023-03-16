@@ -26,6 +26,8 @@
 -   [plot the regression line and confidence intervals taking into
     account random
     effects](#plot-the-regression-line-and-confidence-intervals-taking-into-account-random-effects)
+-   [add linear trends instead of single
+    predictors](#add-linear-trends-instead-of-single-predictors)
 
 # Load packages
 
@@ -1185,3 +1187,55 @@ geom_ribbon(data=effect_PE, aes(x=PE, ymin = lower, ymax=upper), alpha=0.3)
 ```
 
 ![](lmmworkshop_files/figure-markdown_github/plot%20regression%20mixed-effects-1.png)
+
+# add linear trends instead of single predictors
+
+``` r
+contrast<-c(-1,0,1)
+
+contrasts(df$PElevel)<-contrast
+
+GLMMmodContr<-glmer(rec_acc~PElevel+(PElevel|subj_id), data = df_acc, family = binomial)
+```
+
+    ## Warning in checkConv(attr(opt, "derivs"), opt$par, ctrl = control$checkConv, :
+    ## Model failed to converge with max|grad| = 0.00405421 (tol = 0.002, component 1)
+
+``` r
+summary(GLMMmodContr)
+```
+
+    ## Generalized linear mixed model fit by maximum likelihood (Laplace
+    ##   Approximation) [glmerMod]
+    ##  Family: binomial  ( logit )
+    ## Formula: rec_acc ~ PElevel + (PElevel | subj_id)
+    ##    Data: df_acc
+    ## 
+    ##      AIC      BIC   logLik deviance df.resid 
+    ##   8149.5   8213.4  -4065.7   8131.5     8991 
+    ## 
+    ## Scaled residuals: 
+    ##      Min       1Q   Median       3Q      Max 
+    ## -11.6349  -0.5572   0.1680   0.5044   3.9011 
+    ## 
+    ## Random effects:
+    ##  Groups  Name        Variance Std.Dev. Corr       
+    ##  subj_id (Intercept)  4.251   2.062               
+    ##          PElevel2     3.409   1.846    -0.86      
+    ##          PElevel3    22.253   4.717    -0.81  0.99
+    ## Number of obs: 9000, groups:  subj_id, 30
+    ## 
+    ## Fixed effects:
+    ##             Estimate Std. Error z value Pr(>|z|)   
+    ## (Intercept)  -0.8682     0.4048  -2.145  0.03197 * 
+    ## PElevel2      1.0877     0.3702   2.938  0.00330 **
+    ## PElevel3      2.7569     0.8835   3.120  0.00181 **
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Correlation of Fixed Effects:
+    ##          (Intr) PElvl2
+    ## PElevel2 -0.880       
+    ## PElevel3 -0.794  0.948
+    ## optimizer (Nelder_Mead) convergence code: 0 (OK)
+    ## Model failed to converge with max|grad| = 0.00405421 (tol = 0.002, component 1)
